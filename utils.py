@@ -1,6 +1,7 @@
 from enum import Enum, auto
 import datetime
 import csv
+from ipaddress import ip_interface
 
 
 class ErrorState(Enum):
@@ -97,5 +98,37 @@ def read_server_address_dict(path: str):
             res_list = address_dict.get(row[1], [])     # get a value if the address key exists else an empty list
             res_list.append(Response(row[0], row[2]))
             address_dict[row[1]] = res_list
+
+    return address_dict
+
+
+def read_subnet_address_dict(path: str):
+    """Read an input file and format as a dictionary
+
+    An input file should be csv format, and each row includes date (index 0), server address (index 1),
+    and response time data (index 2), such as '20201019133124,10.20.30.1/16,2'.
+
+    Args:
+        path (str): input file path
+
+    Returns:
+        dict[str, dict[str, list[Response]]]: a dictionary of subnet address string keys to dictionary values of
+            network address string keys to response info values
+
+    """
+
+    address_dict = dict()
+    with open(path) as f:
+        reader = csv.reader(f)
+        for row in reader:
+            nw_address = str(ip_interface(row[1]).network)
+
+            addr_dict = address_dict.get(nw_address, dict())
+
+            res_list = addr_dict.get(row[1], [])
+            res_list.append(Response(row[0], row[2]))
+            addr_dict[row[1]] = res_list
+
+            address_dict[nw_address] = addr_dict
 
     return address_dict
