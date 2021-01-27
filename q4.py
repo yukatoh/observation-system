@@ -14,16 +14,20 @@ N = int(sys.argv[2])
 for sub_addr, _addr_dict in sub_addr_dict.items():
     print('Subnet Address', sub_addr)
 
-    sub_errors = []
+    sub_errors = []     # a list of `error_terms` per subnet
     for addr, response_list in _addr_dict.items():
         print('Network Address', addr, end=' ')
 
-        count_error = 0
-        len_error = 0
-        error_terms = []
+        count_error = 0     # the total number of errors
+        len_error = 0       # the length of errors in progress
+        error_terms = []    # a error list of tuple of start and end datetime per server
         manager = ErrorStateManager()
         for res in response_list:
-            manager.transit(res.error)
+            # per response
+
+            manager.transit(res.error)  # transit the state
+
+            # Operate according to the current error state
             if manager.state == ErrorState.START:
                 dt_start = res.date_dt
                 len_error += 1
@@ -79,6 +83,7 @@ for sub_addr, _addr_dict in sub_addr_dict.items():
             if len(sub_error_terms) == 0:
                 break
 
+    # Result
     for i, term in enumerate(sub_error_terms):
         if term[1] == 'continue':
             print('Error[{0}] {1} - continue'.format(
